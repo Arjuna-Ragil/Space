@@ -150,7 +150,7 @@ func startHotkeyLoop() {
 
 					switch pressedID {
 					case 19:
-						// Full padded
+						// Full
 						w = fullW - (pad * 2)
 						h = fullH - (pad * 2)
 						x = workArea.Left + pad
@@ -204,7 +204,7 @@ func startHotkeyLoop() {
 						}
 
 						if !isSystemWindow {
-							setWindowAnimation(hwnd, false) // Disable animation before hiding
+							setWindowAnimation(hwnd, false)
 							win.ShowWindow(hwnd, win.SW_HIDE)
 							currentHash[targetWorkspace] = append(currentHash[targetWorkspace], Window{Hwnd: hwnd, Title: title})
 						}
@@ -219,12 +219,12 @@ func startHotkeyLoop() {
 				currentHash[currentWorkspace] = currentWindows
 
 				for _, w := range currentHash[currentWorkspace] {
-					setWindowAnimation(w.Hwnd, false) // Disable animation before hiding
+					setWindowAnimation(w.Hwnd, false)
 					win.ShowWindow(w.Hwnd, win.SW_HIDE)
 				}
 
 				for _, w := range currentHash[targetWorkspace] {
-					setWindowAnimation(w.Hwnd, true) // Re-enable standard animations for when user interacts with it
+					setWindowAnimation(w.Hwnd, true)
 					win.ShowWindow(w.Hwnd, win.SW_SHOW)
 					win.SetForegroundWindow(w.Hwnd)
 				}
