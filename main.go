@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -16,9 +15,56 @@ type Window struct{
 	Title string
 }
 
+const (
+	SPI_GETWORKAREA = 48
+	SPI_SETWORKAREA = 47
+)
+
 func main() {
+	user32 := syscall.NewLazyDLL("user32.dll")
+
+	registerHotKey := user32.NewProc("RegisterHotKey")
+
+	const (
+		MOD_ALT = 0x0001
+		MOD_SHIFT  = 0x0004
+		WM_HOTKEY = 0x0312
+	)
+
+	// The Hotkeys
+
+	// Workspaces, basically alt + workspace number
+	registerHotKey.Call(0, 1, MOD_ALT, '1') 
+	registerHotKey.Call(0, 2, MOD_ALT, '2')
+	registerHotKey.Call(0, 3, MOD_ALT, '3') 
+	registerHotKey.Call(0, 4, MOD_ALT, '4')
+	registerHotKey.Call(0, 5, MOD_ALT, '5') 
+	registerHotKey.Call(0, 6, MOD_ALT, '6')
+	registerHotKey.Call(0, 7, MOD_ALT, '7') 
+	registerHotKey.Call(0, 8, MOD_ALT, '8')
+	registerHotKey.Call(0, 9, MOD_ALT, '9')
+
+	// Moving Program, basically alt + shift + workspace number
+	registerHotKey.Call(0, 10, MOD_ALT | MOD_SHIFT, '1')
+	registerHotKey.Call(0, 11, MOD_ALT | MOD_SHIFT, '2')
+	registerHotKey.Call(0, 12, MOD_ALT | MOD_SHIFT, '3')
+	registerHotKey.Call(0, 13, MOD_ALT | MOD_SHIFT, '4')
+	registerHotKey.Call(0, 14, MOD_ALT | MOD_SHIFT, '5')
+	registerHotKey.Call(0, 15, MOD_ALT | MOD_SHIFT, '6')
+	registerHotKey.Call(0, 16, MOD_ALT | MOD_SHIFT, '7')
+	registerHotKey.Call(0, 17, MOD_ALT | MOD_SHIFT, '8')
+	registerHotKey.Call(0, 18, MOD_ALT | MOD_SHIFT, '9')
+
+	// Resizing Script
+	registerHotKey.Call(0, 19, MOD_ALT, 'Q') // Full Padded
+	registerHotKey.Call(0, 20, MOD_ALT, 'W') // Half
+	registerHotKey.Call(0, 21, MOD_ALT, 'E') // Small
+
 	hash := make(map[int][]Window)
 	
+	var originalWorkArea win.RECT
+	win.SystemParametersInfo(SPI_GETWORKAREA, 0, unsafe.Pointer(&originalWorkArea), 0)
+
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -65,40 +111,7 @@ func main() {
 		return 1
 	})
 
-	user32 := syscall.NewLazyDLL("user32.dll")
 	enumWindows := user32.NewProc("EnumWindows")
-	
-	registerHotKey := user32.NewProc("RegisterHotKey")
-
-	const (
-		MOD_ALT = 0x0001
-		WM_HOTKEY = 0x0312
-		MOD_SHIFT  = 0x0004
-	)
-
-	// The Hotkeys
-
-	// Workspaces, basically alt + workspace number
-	registerHotKey.Call(0, 1, MOD_ALT, '1') 
-	registerHotKey.Call(0, 2, MOD_ALT, '2')
-	registerHotKey.Call(0, 3, MOD_ALT, '3') 
-	registerHotKey.Call(0, 4, MOD_ALT, '4')
-	registerHotKey.Call(0, 5, MOD_ALT, '5') 
-	registerHotKey.Call(0, 6, MOD_ALT, '6')
-	registerHotKey.Call(0, 7, MOD_ALT, '7') 
-	registerHotKey.Call(0, 8, MOD_ALT, '8')
-	registerHotKey.Call(0, 9, MOD_ALT, '9')
-
-	// Moving Program, basically alt + shift + workspace number
-	registerHotKey.Call(0, 10, MOD_ALT | MOD_SHIFT, '1')
-	registerHotKey.Call(0, 11, MOD_ALT | MOD_SHIFT, '2')
-	registerHotKey.Call(0, 12, MOD_ALT | MOD_SHIFT, '3')
-	registerHotKey.Call(0, 13, MOD_ALT | MOD_SHIFT, '4')
-	registerHotKey.Call(0, 14, MOD_ALT | MOD_SHIFT, '5')
-	registerHotKey.Call(0, 15, MOD_ALT | MOD_SHIFT, '6')
-	registerHotKey.Call(0, 16, MOD_ALT | MOD_SHIFT, '7')
-	registerHotKey.Call(0, 17, MOD_ALT | MOD_SHIFT, '8')
-	registerHotKey.Call(0, 18, MOD_ALT | MOD_SHIFT, '9')
 
 	currentWorkspace := 1
 	var msg win.MSG
@@ -111,6 +124,46 @@ func main() {
 		if msg.Message == WM_HOTKEY {
 			pressedID := int(msg.WParam)
 
+			if pressedID >= 19 && pressedID <= 22 {
+				hwnd := win.GetForegroundWindow()
+				if hwnd != 0 {
+					win.ShowWindow(hwnd, win.SW_RESTORE)
+					
+					var workArea win.RECT
+					win.SystemParametersInfo(SPI_GETWORKAREA, 0, unsafe.Pointer(&workArea), 0)
+					
+					pad := int32(15)
+					
+					var x, y, w, h int32
+					fullW := workArea.Right - workArea.Left
+					fullH := workArea.Bottom - workArea.Top
+
+					switch pressedID {
+						case 19:
+							// Full padded
+							w = fullW - (pad * 2)
+							h = fullH - (pad * 2)
+							x = workArea.Left + pad
+							y = workArea.Top + pad
+						case 20:
+							// half
+							w = (fullW - (pad * 3)) / 2
+							h = fullH - (pad * 2)
+							x = workArea.Left + pad
+							y = workArea.Top + pad
+						case 21:
+							// small
+							w = fullW / 2
+							h = fullH / 2
+							x = workArea.Left + (fullW - w) / 2
+							y = workArea.Top + (fullH - h) / 2
+					}
+					
+					win.SetWindowPos(hwnd, 0, x, y, w, h, win.SWP_NOZORDER|win.SWP_NOACTIVATE)
+				}
+				continue
+			}
+
 			targetWorkspace := pressedID
 			isMove := false
 			if pressedID >= 10 && pressedID <= 18 {
@@ -120,8 +173,6 @@ func main() {
 
 			if targetWorkspace >= 1 && targetWorkspace <= 9 && targetWorkspace != currentWorkspace {
 				if isMove {
-					fmt.Printf("Moving focused window to Workspace %d and switching...\n", targetWorkspace)
-					
 					hwnd := win.GetForegroundWindow()
 					if hwnd != 0 {
 						length := win.SendMessage(hwnd, win.WM_GETTEXTLENGTH, 0, 0)
@@ -147,8 +198,6 @@ func main() {
 							hash[targetWorkspace] = append(hash[targetWorkspace], Window{Hwnd: hwnd, Title: title})
 						}
 					}
-				} else {
-					fmt.Printf("Switching from Workspace %d to Workspace %d...\n", currentWorkspace, targetWorkspace)
 				}
 
 				windowList = nil
