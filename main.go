@@ -95,34 +95,63 @@ func main() {
 		if msg.Message == WM_HOTKEY {
 			pressedID := int(msg.WParam)
 
-			if pressedID >= 1 && pressedID <= 9 {
-				targetWorkspace := pressedID
-				
-				if targetWorkspace != currentWorkspace {
-					fmt.Printf("Switching from Workspace %d to Workspace %d...\n", currentWorkspace, targetWorkspace)
+			targetWorkspace := pressedID
+			isMove := false
+			if pressedID >= 10 && pressedID <= 18 {
+				targetWorkspace = pressedID - 9
+				isMove = true
+			}
 
-					windowList = nil
-					enumWindows.Call(enumFunc, 0)
+			if targetWorkspace >= 1 && targetWorkspace <= 9 && targetWorkspace != currentWorkspace {
+				if isMove {
+					fmt.Printf("Moving focused window to Workspace %d and switching...\n", targetWorkspace)
 					
-					currentWindows := make([]Window, len(windowList))
-					copy(currentWindows, windowList)
-					hash[currentWorkspace] = currentWindows
+					hwnd := win.GetForegroundWindow()
+					if hwnd != 0 {
+						length := win.SendMessage(hwnd, win.WM_GETTEXTLENGTH, 0, 0)
+						title := ""
+						if length > 0 {
+							buffer := make([]uint16, length+1)
+							win.SendMessage(hwnd, win.WM_GETTEXT, uintptr(length+1), uintptr(unsafe.Pointer(&buffer[0])))
+							title = syscall.UTF16ToString(buffer)
+						}
+						
+						lowerTitle := strings.ToLower(title)
+						isSystemWindow := false
+						if 	strings.Contains(lowerTitle, "windows input experience") ||
+							strings.Contains(lowerTitle, "nvidia geforce overlay") ||
+							strings.Contains(lowerTitle, "program manager") ||
+							strings.Contains(lowerTitle, "yasbbar") ||
+							strings.Contains(lowerTitle, "nahimic") || length == 0 {
+							isSystemWindow = true
+						}
 
-					for _, w := range hash[currentWorkspace] {
-						win.ShowWindow(w.Hwnd, win.SW_HIDE)
+						if !isSystemWindow {
+							win.ShowWindow(hwnd, win.SW_HIDE)
+							hash[targetWorkspace] = append(hash[targetWorkspace], Window{Hwnd: hwnd, Title: title})
+						}
 					}
-
-					for _, w := range hash[targetWorkspace] {
-						win.ShowWindow(w.Hwnd, win.SW_SHOW)
-						win.SetForegroundWindow(w.Hwnd)
-					}
-
-					currentWorkspace = targetWorkspace
+				} else {
+					fmt.Printf("Switching from Workspace %d to Workspace %d...\n", currentWorkspace, targetWorkspace)
 				}
-			} else if pressedID >= 10 && pressedID <= 18 {
-				targetWorkspace := pressedID - 9
-				fmt.Printf("User pressed Alt+Shift+%d! Moving focused window to workspace %d...\n", targetWorkspace, targetWorkspace)
-				// the moving logic later!
+
+				windowList = nil
+				enumWindows.Call(enumFunc, 0)
+				
+				currentWindows := make([]Window, len(windowList))
+				copy(currentWindows, windowList)
+				hash[currentWorkspace] = currentWindows
+
+				for _, w := range hash[currentWorkspace] {
+					win.ShowWindow(w.Hwnd, win.SW_HIDE)
+				}
+
+				for _, w := range hash[targetWorkspace] {
+					win.ShowWindow(w.Hwnd, win.SW_SHOW)
+					win.SetForegroundWindow(w.Hwnd)
+				}
+
+				currentWorkspace = targetWorkspace
 			}
 		}
 
