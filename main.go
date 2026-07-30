@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -16,6 +18,20 @@ type Window struct{
 
 func main() {
 	hash := make(map[int][]Window)
+	
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		for _, windows := range hash {
+			for _, w := range windows {
+				win.ShowWindow(w.Hwnd, win.SW_SHOW)
+				win.SetForegroundWindow(w.Hwnd)
+			}
+		}
+		os.Exit(0)
+	}()
+
 	var windowList []Window
 
 	enumFunc := syscall.NewCallback(func(hwnd win.HWND, lParam uintptr) uintptr {
