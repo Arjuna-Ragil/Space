@@ -25,9 +25,28 @@ const (
 	MOD_SHIFT   = 0x0004
 	MOD_WIN     = 0x0008
 	WM_HOTKEY   = 0x0312
+
+	DWMWA_TRANSITIONS_FORCEDISABLED = 3
 )
 
 var currentHash = make(map[int][]Window)
+
+func setWindowAnimation(hwnd win.HWND, enable bool) {
+	dwmapi := syscall.NewLazyDLL("dwmapi.dll")
+	dwmSetWindowAttribute := dwmapi.NewProc("DwmSetWindowAttribute")
+	
+	val := int32(1)
+	if enable {
+		val = 0
+	}
+	
+	dwmSetWindowAttribute.Call(
+		uintptr(hwnd),
+		uintptr(DWMWA_TRANSITIONS_FORCEDISABLED),
+		uintptr(unsafe.Pointer(&val)),
+		4,
+	)
+}
 
 func startHotkeyLoop() {
 	runtime.LockOSThread()
@@ -185,6 +204,7 @@ func startHotkeyLoop() {
 						}
 
 						if !isSystemWindow {
+							setWindowAnimation(hwnd, false) // Disable animation before hiding
 							win.ShowWindow(hwnd, win.SW_HIDE)
 							currentHash[targetWorkspace] = append(currentHash[targetWorkspace], Window{Hwnd: hwnd, Title: title})
 						}
@@ -199,10 +219,12 @@ func startHotkeyLoop() {
 				currentHash[currentWorkspace] = currentWindows
 
 				for _, w := range currentHash[currentWorkspace] {
+					setWindowAnimation(w.Hwnd, false) // Disable animation before hiding
 					win.ShowWindow(w.Hwnd, win.SW_HIDE)
 				}
 
 				for _, w := range currentHash[targetWorkspace] {
+					setWindowAnimation(w.Hwnd, true) // Re-enable standard animations for when user interacts with it
 					win.ShowWindow(w.Hwnd, win.SW_SHOW)
 					win.SetForegroundWindow(w.Hwnd)
 				}
