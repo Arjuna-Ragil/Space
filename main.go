@@ -46,28 +46,45 @@ func main() {
 		}
 
 		windowList = append(windowList, Window{Hwnd: hwnd, Title: title})
-
-		hash[1] = windowList
-
 		return 1
 	})
 
 	user32 := syscall.NewLazyDLL("user32.dll")
 	enumWindows := user32.NewProc("EnumWindows")
-
-	enumWindows.Call(enumFunc, 0)
 	
 	registerHotKey := user32.NewProc("RegisterHotKey")
 
 	const (
 		MOD_ALT = 0x0001
 		WM_HOTKEY = 0x0312
+		MOD_SHIFT  = 0x0004
 	)
 
-	// Basically alt + the workspace number
+	// The Hotkeys
+
+	// Workspaces, basically alt + workspace number
 	registerHotKey.Call(0, 1, MOD_ALT, '1') 
 	registerHotKey.Call(0, 2, MOD_ALT, '2')
+	registerHotKey.Call(0, 3, MOD_ALT, '3') 
+	registerHotKey.Call(0, 4, MOD_ALT, '4')
+	registerHotKey.Call(0, 5, MOD_ALT, '5') 
+	registerHotKey.Call(0, 6, MOD_ALT, '6')
+	registerHotKey.Call(0, 7, MOD_ALT, '7') 
+	registerHotKey.Call(0, 8, MOD_ALT, '8')
+	registerHotKey.Call(0, 9, MOD_ALT, '9')
 
+	// Moving Program, basically alt + shift + workspace number
+	registerHotKey.Call(0, 10, MOD_ALT | MOD_SHIFT, '1')
+	registerHotKey.Call(0, 11, MOD_ALT | MOD_SHIFT, '2')
+	registerHotKey.Call(0, 12, MOD_ALT | MOD_SHIFT, '3')
+	registerHotKey.Call(0, 13, MOD_ALT | MOD_SHIFT, '4')
+	registerHotKey.Call(0, 14, MOD_ALT | MOD_SHIFT, '5')
+	registerHotKey.Call(0, 15, MOD_ALT | MOD_SHIFT, '6')
+	registerHotKey.Call(0, 16, MOD_ALT | MOD_SHIFT, '7')
+	registerHotKey.Call(0, 17, MOD_ALT | MOD_SHIFT, '8')
+	registerHotKey.Call(0, 18, MOD_ALT | MOD_SHIFT, '9')
+
+	currentWorkspace := 1
 	var msg win.MSG
 	for {
 		ret := win.GetMessage(&msg, 0, 0, 0)
@@ -76,13 +93,36 @@ func main() {
 		}
 
 		if msg.Message == WM_HOTKEY {
-			pressedID := msg.WParam
+			pressedID := int(msg.WParam)
 
-			switch pressedID {
-				case 1:
-					fmt.Println("User pressed Alt+1! Switching to Workspace 1...")
-				case 2:
-					fmt.Println("User pressed Alt+2! Switching to Workspace 2...")
+			if pressedID >= 1 && pressedID <= 9 {
+				targetWorkspace := pressedID
+				
+				if targetWorkspace != currentWorkspace {
+					fmt.Printf("Switching from Workspace %d to Workspace %d...\n", currentWorkspace, targetWorkspace)
+
+					windowList = nil
+					enumWindows.Call(enumFunc, 0)
+					
+					currentWindows := make([]Window, len(windowList))
+					copy(currentWindows, windowList)
+					hash[currentWorkspace] = currentWindows
+
+					for _, w := range hash[currentWorkspace] {
+						win.ShowWindow(w.Hwnd, win.SW_HIDE)
+					}
+
+					for _, w := range hash[targetWorkspace] {
+						win.ShowWindow(w.Hwnd, win.SW_SHOW)
+						win.SetForegroundWindow(w.Hwnd)
+					}
+
+					currentWorkspace = targetWorkspace
+				}
+			} else if pressedID >= 10 && pressedID <= 18 {
+				targetWorkspace := pressedID - 9
+				fmt.Printf("User pressed Alt+Shift+%d! Moving focused window to workspace %d...\n", targetWorkspace, targetWorkspace)
+				// the moving logic later!
 			}
 		}
 
