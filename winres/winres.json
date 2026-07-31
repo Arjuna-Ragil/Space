@@ -8,12 +8,10 @@
   },
   "RT_MANIFEST": {
     "APP": {
-      "0": [
-        {
-          "executionLevel": "asInvoker",
-          "dpiAwareness": "PerMonitorV2, PerMonitor"
-        }
-      ]
+      "0": {
+        "executionLevel": "asInvoker",
+        "dpiAwareness": "PerMonitorV2, PerMonitor"
+      }
     }
   }
 }
