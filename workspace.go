@@ -109,11 +109,11 @@ func startHotkeyLoop() {
 		title := syscall.UTF16ToString(buffer)
 
 		lowerTitle := strings.ToLower(title)
-		if strings.Contains(lowerTitle, "windows input experience") ||
-			strings.Contains(lowerTitle, "nvidia geforce overlay") ||
-			strings.Contains(lowerTitle, "program manager") ||
-			strings.Contains(lowerTitle, "yasbbar") ||
-			strings.Contains(lowerTitle, "nahimic") {
+		if lowerTitle == "windows input experience" ||
+			lowerTitle == "nvidia geforce overlay" ||
+			lowerTitle == "program manager" ||
+			lowerTitle == "yasbbar" ||
+			lowerTitle == "nahimic" {
 			return 1
 		}
 
@@ -195,11 +195,11 @@ func startHotkeyLoop() {
 
 						lowerTitle := strings.ToLower(title)
 						isSystemWindow := false
-						if strings.Contains(lowerTitle, "windows input experience") ||
-							strings.Contains(lowerTitle, "nvidia geforce overlay") ||
-							strings.Contains(lowerTitle, "program manager") ||
-							strings.Contains(lowerTitle, "yasbbar") ||
-							strings.Contains(lowerTitle, "nahimic") || length == 0 {
+						if lowerTitle == "windows input experience" ||
+							lowerTitle == "nvidia geforce overlay" ||
+							lowerTitle == "program manager" ||
+							lowerTitle == "yasbbar" ||
+							lowerTitle == "nahimic" || length == 0 {
 							isSystemWindow = true
 						}
 
