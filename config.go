@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	Padding int32 `yaml:"padding"`
+	IgnoreList []string `yaml:"ignoreList"`
 	Hotkeys struct {
 		Workspace1  string `yaml:"workspace1"`
 		Workspace2  string `yaml:"workspace2"`
@@ -41,6 +42,7 @@ func loadConfig() {
 	
 	// Default config
 	currentConfig.Padding = 15
+	currentConfig.IgnoreList = []string{}
 	currentConfig.Hotkeys.Workspace1 = "Alt+1"
 	currentConfig.Hotkeys.Workspace2 = "Alt+2"
 	currentConfig.Hotkeys.Workspace3 = "Alt+3"

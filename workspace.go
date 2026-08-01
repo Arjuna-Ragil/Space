@@ -109,11 +109,23 @@ func startHotkeyLoop() {
 		title := syscall.UTF16ToString(buffer)
 
 		lowerTitle := strings.ToLower(title)
+		isIgnored := false
 		if lowerTitle == "windows input experience" ||
 			lowerTitle == "nvidia geforce overlay" ||
 			lowerTitle == "program manager" ||
 			lowerTitle == "yasbbar" ||
 			lowerTitle == "nahimic" {
+			isIgnored = true
+		} else if !(strings.Contains(lowerTitle, "chrome") || strings.Contains(lowerTitle, "google")) {
+			for _, ignoreStr := range currentConfig.IgnoreList {
+				if strings.Contains(lowerTitle, strings.ToLower(ignoreStr)) {
+					isIgnored = true
+					break
+				}
+			}
+		}
+
+		if isIgnored {
 			return 1
 		}
 
@@ -195,12 +207,22 @@ func startHotkeyLoop() {
 
 						lowerTitle := strings.ToLower(title)
 						isSystemWindow := false
-						if lowerTitle == "windows input experience" ||
+						
+						if length == 0 {
+							isSystemWindow = true
+						} else if lowerTitle == "windows input experience" ||
 							lowerTitle == "nvidia geforce overlay" ||
 							lowerTitle == "program manager" ||
 							lowerTitle == "yasbbar" ||
-							lowerTitle == "nahimic" || length == 0 {
+							lowerTitle == "nahimic" {
 							isSystemWindow = true
+						} else if !(strings.Contains(lowerTitle, "chrome") || strings.Contains(lowerTitle, "google")) {
+							for _, ignoreStr := range currentConfig.IgnoreList {
+								if strings.Contains(lowerTitle, strings.ToLower(ignoreStr)) {
+									isSystemWindow = true
+									break
+								}
+							}
 						}
 
 						if !isSystemWindow {

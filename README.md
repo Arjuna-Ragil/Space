@@ -36,11 +36,14 @@ You can fully customize these hotkeys by right-clicking the System Tray icon and
 
 ## Configuration
 
-The `config.yaml` file controls all keyboard shortcuts and layout padding. 
+The `config.yaml` file controls all keyboard shortcuts, layout padding, and specific applications you want the workspace manager to ignore.
 
 Example configuration:
 ```yaml
 padding: 15
+ignoreList:
+  - "spotify"
+  - "discord"
 hotkeys:
   workspace1: Alt+1
   moveTo1: Alt+Shift+1
@@ -48,6 +51,9 @@ hotkeys:
   resizeHalf: Alt+W
   resizeSmall: Alt+E
 ```
+
+### Dynamic Ignore List
+You can add partial names of any applications you want the manager to completely ignore by adding them to the `ignoreList`. For safety, any window with a title containing "chrome" or "google" will *always* be managed, even if it matches a word in your ignore list.
 
 ### Hotkey Modifiers
 You can use any combination of the following modifiers separated by a `+` symbol:
