@@ -114,9 +114,11 @@ func startHotkeyLoop() {
 			lowerTitle == "nvidia geforce overlay" ||
 			lowerTitle == "program manager" ||
 			lowerTitle == "yasbbar" ||
-			lowerTitle == "nahimic" {
+			lowerTitle == "nahimic" ||
+			lowerTitle == "winbar" ||
+			lowerTitle == "winbar-panel" {
 			isIgnored = true
-		} else if !(strings.Contains(lowerTitle, "chrome") || strings.Contains(lowerTitle, "google")) {
+		} else if !(strings.Contains(lowerTitle, "chrome") || strings.Contains(lowerTitle, "google") || strings.Contains(lowerTitle, "antigravity")) {
 			for _, ignoreStr := range currentConfig.IgnoreList {
 				if strings.Contains(lowerTitle, strings.ToLower(ignoreStr)) {
 					isIgnored = true
