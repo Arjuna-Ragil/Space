@@ -252,6 +252,7 @@ func startHotkeyLoop() {
 				}
 
 				currentWorkspace = targetWorkspace
+				broadcastWorkspace(currentWorkspace)
 			}
 		}
 

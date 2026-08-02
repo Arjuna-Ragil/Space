@@ -58,6 +58,7 @@ func onReady() {
 
 	loadConfig()
 
+	go startPipeServer()
 	go startHotkeyLoop()
 
 	go func() {
