@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -20,7 +21,12 @@ func isStartupEnabled() bool {
 	if err != nil {
 		return false
 	}
-	defer k.Close()
+	defer func(){
+		err := k.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 	_, _, err = k.GetStringValue(registryAppName)
 	return err == nil
 }
@@ -30,7 +36,12 @@ func enableStartup() error {
 	if err != nil {
 		return err
 	}
-	defer k.Close()
+	defer func(){
+		err := k.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 	exePath, err := os.Executable()
 	if err != nil {
 		return err
@@ -43,7 +54,12 @@ func disableStartup() error {
 	if err != nil {
 		return err
 	}
-	defer k.Close()
+	defer func(){
+		err := k.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 	return k.DeleteValue(registryAppName)
 }
 
@@ -66,15 +82,24 @@ func onReady() {
 			select {
 			case <-mStartup.ClickedCh:
 				if mStartup.Checked() {
-					disableStartup()
+					err := disableStartup()
+					if err != nil {
+						fmt.Println(err)
+					}
 					mStartup.Uncheck()
 				} else {
-					enableStartup()
+					err := enableStartup()
+					if err != nil {
+						fmt.Println(err)
+					}
 					mStartup.Check()
 				}
 			case <-mConfig.ClickedCh:
-				cmd := exec.Command("cmd", "/c", "start", "config.yaml")
-				cmd.Start()
+				cmd := exec.Command("cmd", "/c", "start", "", getConfigPath())
+				err := cmd.Start()
+				if err != nil {
+					fmt.Println(err)
+				}
 			case <-mQuit.ClickedCh:
 				systray.Quit()
 				return

@@ -40,7 +40,7 @@ func setWindowAnimation(hwnd win.HWND, enable bool) {
 		val = 0
 	}
 	
-	dwmSetWindowAttribute.Call(
+	_, _, _ = dwmSetWindowAttribute.Call(
 		uintptr(hwnd),
 		uintptr(DWMWA_TRANSITIONS_FORCEDISABLED),
 		uintptr(unsafe.Pointer(&val)),
@@ -59,7 +59,7 @@ func startHotkeyLoop() {
 			return
 		}
 		mod, key := parseHotkey(hotkey)
-		registerHotKey.Call(0, uintptr(id), mod, key)
+		_, _, _ = registerHotKey.Call(0, uintptr(id), mod, key)
 	}
 
 	// Register workspaces 1-9
@@ -118,7 +118,7 @@ func startHotkeyLoop() {
 			lowerTitle == "winbar" ||
 			lowerTitle == "winbar-panel" {
 			isIgnored = true
-		} else if !(strings.Contains(lowerTitle, "chrome") || strings.Contains(lowerTitle, "google") || strings.Contains(lowerTitle, "antigravity")) {
+		} else if !(strings.Contains(lowerTitle, "chrome")) || !(strings.Contains(lowerTitle, "google")) || !(strings.Contains(lowerTitle, "antigravity")) {
 			for _, ignoreStr := range currentConfig.IgnoreList {
 				if strings.Contains(lowerTitle, strings.ToLower(ignoreStr)) {
 					isIgnored = true
@@ -218,7 +218,7 @@ func startHotkeyLoop() {
 							lowerTitle == "yasbbar" ||
 							lowerTitle == "nahimic" {
 							isSystemWindow = true
-						} else if !(strings.Contains(lowerTitle, "chrome") || strings.Contains(lowerTitle, "google")) {
+						} else if !(strings.Contains(lowerTitle, "chrome")) || !(strings.Contains(lowerTitle, "google")) {
 							for _, ignoreStr := range currentConfig.IgnoreList {
 								if strings.Contains(lowerTitle, strings.ToLower(ignoreStr)) {
 									isSystemWindow = true
@@ -236,11 +236,31 @@ func startHotkeyLoop() {
 				}
 
 				windowList = nil
-				enumWindows.Call(enumFunc, 0)
+				_, _, _ = enumWindows.Call(enumFunc, 0)
 
 				currentWindows := make([]Window, len(windowList))
 				copy(currentWindows, windowList)
 				currentHash[currentWorkspace] = currentWindows
+
+				for w, windows := range currentHash {
+					if w == currentWorkspace {
+						continue
+					}
+					var newWindows []Window
+					for _, win := range windows {
+						found := false
+						for _, cw := range currentWindows {
+							if win.Hwnd == cw.Hwnd {
+								found = true
+								break
+							}
+						}
+						if !found {
+							newWindows = append(newWindows, win)
+						}
+					}
+					currentHash[w] = newWindows
+				}
 
 				for _, w := range currentHash[currentWorkspace] {
 					setWindowAnimation(w.Hwnd, false)

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -37,6 +39,14 @@ type Config struct {
 
 var currentConfig Config
 
+func getConfigPath() string {
+	exePath, err := os.Executable()
+	if err != nil {
+		return "config.yaml"
+	}
+	return filepath.Join(filepath.Dir(exePath), "config.yaml")
+}
+
 func loadConfig() {
 	currentConfig = Config{}
 	
@@ -65,12 +75,19 @@ func loadConfig() {
 	currentConfig.Hotkeys.ResizeHalf = "Alt+W"
 	currentConfig.Hotkeys.ResizeSmall = "Alt+E"
 
-	data, err := os.ReadFile("config.yaml")
+	configPath := getConfigPath()
+	data, err := os.ReadFile(configPath)
 	if err == nil {
-		yaml.Unmarshal(data, &currentConfig)
+		err = yaml.Unmarshal(data, &currentConfig)
+		if err != nil {
+			fmt.Println(err)
+		}
 	} else {
 		out, _ := yaml.Marshal(currentConfig)
-		os.WriteFile("config.yaml", out, 0644)
+		err = os.WriteFile(configPath, out, 0644)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
 

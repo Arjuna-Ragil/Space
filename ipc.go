@@ -43,7 +43,10 @@ func broadcastWorkspace(ws int) {
 		if err == nil {
 			activeClients = append(activeClients, conn)
 		} else {
-			conn.Close()
+			err := conn.Close()
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 	}
 	pipeClients = activeClients
