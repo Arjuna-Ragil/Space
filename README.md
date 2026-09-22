@@ -1,5 +1,9 @@
 # Space Workspace Manager
 
+[![Build & Test](https://github.com/Arjuna-Ragil/Space/actions/workflows/go.yml/badge.svg)](https://github.com/Arjuna-Ragil/Space/actions/workflows/go.yml)
+![GitHub Release](https://img.shields.io/github/v/release/Arjuna-Ragil/Space)
+
+
 Space is a lightweight, lightning-fast virtual workspace and window manager for Windows. 
 
 Written in Go, it operates entirely in the background from your System Tray, allowing you to seamlessly organize your windows across 9 virtual workspaces, instantly resize windows into predefined layouts, and manage your productivity without ever touching your mouse.
@@ -9,11 +13,20 @@ Written in Go, it operates entirely in the background from your System Tray, all
 * **Virtual Workspaces:** Seamlessly switch between 9 distinct workspaces.
 * **Instant Transitions:** Bypasses default Windows fade animations for immediate workspace switching.
 * **Window Routing:** Instantly move your currently focused window to any other workspace.
+
+<div align="center">
+  <img src="documentation/workspace_demo.gif" alt="Demo 1">
+</div>
+
 * **Quick Resizing:** Snap windows to Full, Half, or Small layouts with customizable screen padding.
 * **Dynamic Configuration:** Fully customizable hotkeys and padding via a simple `config.yaml` file.
 * **System Tray Integration:** Clean, unobtrusive background execution.
 * **Run on Startup:** Native toggle to start the application automatically when you log into Windows.
 * **Graceful Shutdown:** Safely restores all hidden windows across all workspaces when you quit the application.
+
+<div align="center">
+  <img src="documentation/resizing_demo.gif" alt="Demo 2">
+</div>
 
 ## Installation
 
