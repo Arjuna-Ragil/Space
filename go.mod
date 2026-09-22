@@ -1,6 +1,6 @@
 module Space
 
-go 1.25.4
+go 1.27.1
 
 require (
 	github.com/getlantern/systray v1.2.2
