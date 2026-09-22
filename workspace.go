@@ -91,10 +91,26 @@ func startHotkeyLoop() {
 
 	var windowList []Window
 
+	dwmapi := syscall.NewLazyDLL("dwmapi.dll")
+	dwmGetWindowAttribute := dwmapi.NewProc("DwmGetWindowAttribute")
+	const DWMWA_CLOAKED = 14
+
 	enumFunc := syscall.NewCallback(func(hwnd win.HWND, lParam uintptr) uintptr {
 		if !win.IsWindowVisible(hwnd) {
 			return 1
 		}
+
+		var cloaked int32
+		dwmGetWindowAttribute.Call(
+			uintptr(hwnd),
+			uintptr(DWMWA_CLOAKED),
+			uintptr(unsafe.Pointer(&cloaked)),
+			4,
+		)
+		if cloaked != 0 {
+			return 1
+		}
+
 		length := win.SendMessage(hwnd, win.WM_GETTEXTLENGTH, 0, 0)
 		if length == 0 {
 			return 1
