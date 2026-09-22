@@ -5,7 +5,7 @@ go 1.27.1
 require (
 	github.com/getlantern/systray v1.2.2
 	github.com/lxn/win v0.0.0-20210218163916-a377121e959e
-	golang.org/x/sys v0.1.0
+	golang.org/x/sys v0.48.0
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce
 	gopkg.in/yaml.v3 v3.0.1
 )
